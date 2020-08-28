@@ -1,3 +1,4 @@
+import sys
 import pickle
 import urllib
 import requests
@@ -62,14 +63,37 @@ def getCookies():
     return freshCookies
 
 
-def displayLevel(levelInfo, spaces=0):
-    print(
-        f"{' ' * spaces}{levelInfo['levelName']} | {levelInfo['levelType']} | {levelInfo['levelID']}"
-    )
+# def displayClassRoom():
+
+
+def displayLevel(course, levelInfo, req, spaces=0):
+    if not levelInfo:
+        levelInfo = course
+
+    if levelInfo["levelName"]:
+        print(
+            f"{' ' * spaces}{levelInfo['levelName']} | {levelInfo['levelType']} | {levelInfo['levelID']}"
+        )
     if not levelInfo["subLevels"]:
+        if levelInfo["levelType"] in [2, 3]:
+            levelData = req.get(
+                f"{baseDomain}/learning_manager/getLevelData",
+                params={
+                    "levelid": levelInfo["levelID"],
+                    "level": "3",
+                    "clid": course["clid"],
+                    "lid": "5",
+                    "batchID": course["batchID"],
+                    "userType": "student",
+                },
+            ).json()
+            # print(levelData.text)
+            # sys.exit()
+            for classRoom in levelData["classroomList"]:
+                print(f"{' ' * (spaces + 2)} {classRoom['classroomType']} {classRoom['fileName']} ")
         return
     for sublevel in levelInfo["subLevels"]:
-        displayLevel(sublevel, spaces + 2)
+        displayLevel(course, sublevel, req, spaces + 2)
 
 
 def main():
@@ -85,22 +109,22 @@ def main():
     table = Table(show_header=True)
     table.add_column("Course code")
     table.add_column("CourseID")
+    table.add_column("clid")
     table.add_column("BatchID")
     for course in dashDetails["studentCourseList"]:
-        table.add_row(course["courseCode"], course["courseID"], course["batchID"])
+        table.add_row(course["courseCode"], course["courseID"], course["clid"], course["batchID"])
     console.print(table)
 
-    # for course in dashDetails["studentCourseList"]:
-    course = dashDetails["studentCourseList"][2]
-    clg = course["clid"]
-    batchId = course["batchID"]
+    for course in dashDetails["studentCourseList"]:
+        clg = course["clid"]
+        batchId = course["batchID"]
 
-    courseStructure = req.post(
-        f"{baseDomain}/learning_manager/myCourseContent",
-        data={"userType": "student", "langID": "5", "clg": clg, "batchID": batchId},
-    ).json()
-
-    displayLevel(courseStructure)
+        courseStructure = req.post(
+            f"{baseDomain}/learning_manager/myCourseContent",
+            data={"userType": "student", "langID": "5", "clg": clg, "batchID": batchId},
+        ).json()
+        print(course["courseName"])
+        displayLevel(course, courseStructure, req)
 
 
 if __name__ == "__main__":
