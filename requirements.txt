@@ -1,0 +1,15 @@
+certifi==2020.6.20
+chardet==3.0.4
+colorama==0.4.3
+commonmark==0.9.1
+configparser==5.0.0
+crayons==0.4.0
+idna==2.10
+Pygments==2.6.1
+requests==2.24.0
+rich==6.0.0
+selenium==3.141.0
+tqdm==4.48.2
+typing-extensions==3.7.4.3
+urllib3==1.25.10
+webdriver-manager==3.2.2

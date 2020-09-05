@@ -1,8 +1,12 @@
 # Config
 CONFIG.py
 
-# Cookie database
+# Pickle databases
 cookies.pkl
+index.pkl
+
+# Python venv
+indexer-venv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
