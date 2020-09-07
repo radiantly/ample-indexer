@@ -75,7 +75,7 @@ def displayLevel(course, levelInfo, spaces=0):
 
     # If it has no more subLevels, check if we need to retrieve the level information
     if not levelInfo["subLevels"]:
-        if levelInfo["levelType"] in [2, 3]:
+        if levelInfo["levelType"] in [1, 2, 3]:
             levelData = session.get(
                 "/learning_manager/getLevelData",
                 params={
@@ -90,7 +90,10 @@ def displayLevel(course, levelInfo, spaces=0):
             # print(levelData.text)
             levelInfo["classroomList"] = levelData["classroomList"]
             for classRoom in levelData["classroomList"]:
-                print(f"{' ' * (spaces + 2)} {classRoom['classroomType']} {classRoom['fileName']} ")
+                if classRoom["classroomType"] != "HTML":  # Hide HTML because it fills the terminal
+                    print(
+                        f"{' ' * (spaces + 2)} {classRoom['classroomType']} {classRoom['fileName']} "
+                    )
         return
     for sublevel in levelInfo["subLevels"]:
         displayLevel(course, sublevel, spaces + 2)
@@ -108,7 +111,7 @@ def main():
     print(f"User Id: {dashDetails['userID']}")
 
     # Print the course details in a nice table
-    table = Table(show_header=True)
+    table = Table(show_header=True, header_style="bold magenta")
     table.add_column("Course code")
     table.add_column("CourseID")
     table.add_column("clid")
@@ -131,6 +134,10 @@ def main():
 
         course["subLevels"] = courseStructure["subLevels"]
 
+        # Print course code and levels
+        console.print(f"{course['courseCode']} - {course['courseName']}", style="bold red")
+
+        # Print sublevels
         displayLevel(course, courseStructure)
 
     print(f"Requests made: {session.request_count}")
