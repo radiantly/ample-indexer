@@ -8,24 +8,27 @@ from requests.compat import urljoin
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
-from CONFIG import userId, baseDomain, chrome_type
+from CONFIG import userId, baseDomain, chrome_type, user_email, user_passw
 from CachedSession import CachedSession
 
 from rich.console import Console
 from rich.table import Table
-
-console = Console()
-
-chrome_options = webdriver.ChromeOptions()
-chrome_options.add_argument("--ignore-certificate-errors")
-chrome_options.add_argument("--ignore-ssl-errors")
-# chrome_options.add_argument("--headless")
 
 session = CachedSession(prefix_url=baseDomain)
 
 
 def getFreshCookies():
     """Open a browser to retrieve the required cookies for the session"""
+
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.add_argument("--ignore-certificate-errors")
+    chrome_options.add_argument("--ignore-ssl-errors")
+
+    # To store session. But this doesn't work well.
+    # chrome_options.add_argument("--user-data-dir=chrome-data")
+
+    # Headless mode. Comment this if you're facing issues with selenium
+    chrome_options.add_argument("--headless")
 
     browser = webdriver.Chrome(
         ChromeDriverManager(chrome_type=chrome_type).install(), options=chrome_options
@@ -35,8 +38,22 @@ def getFreshCookies():
 
     browser.get(urljoin(baseDomain, "/ssologin?tenant=CB"))
 
-    # Wait for the user to enter their credentials and finally reach the dashboard
-    WebDriverWait(browser, timeout=120).until(
+    print("Entering email..")
+    browser.find_element_by_css_selector("[type=email]").send_keys(user_email)
+    browser.find_element_by_css_selector("[type=submit]").click()
+    sleep(1)
+
+    print("Entering password..")
+    browser.find_element_by_css_selector("[type=password]").send_keys(user_passw)
+    browser.find_element_by_css_selector("[type=submit]").click()
+    sleep(1)
+
+    noButton = browser.find_elements_by_css_selector("[type=button]")
+    if noButton:
+        noButton[0].click()
+
+    print("Waiting for redirect..")
+    WebDriverWait(browser, timeout=5).until(
         lambda driver: driver.current_url.startswith(urljoin(baseDomain, "/home"))
     )
 
@@ -59,11 +76,11 @@ def initSession():
     if cookiePickle.exists():
         pickledCookies = pickle.load(open(cookiePickle, "rb"))
         if testCookies(pickledCookies):
-            return pickledCookies
+            return session
     freshCookies = getFreshCookies()
     session.setCookies(freshCookies)
     pickle.dump(freshCookies, open(cookiePickle, "wb"))
-    return freshCookies
+    return session
 
 
 def displayLevel(course, levelInfo, spaces=0):
@@ -102,6 +119,8 @@ def displayLevel(course, levelInfo, spaces=0):
 def main():
     # Initiate session (set required cookies)
     initSession()
+
+    console = Console()
 
     # Get course list
     dashDetails = session.post(

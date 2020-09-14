@@ -1,5 +1,9 @@
 from webdriver_manager.utils import ChromeType
 
+# Your email and password
+user_email = ""
+user_passw = ""
+
 # Your user id
 userId = "longGibberishHere"
 
