@@ -1,7 +1,6 @@
 import re
 import pickle
 import requests
-from tqdm import tqdm
 from pathlib import Path
 from requests.compat import urljoin
 from CONFIG import userId, baseDomain, directoryMap, baseDir
@@ -64,12 +63,9 @@ def main():
 
             # Else download the file
             print(diskFilePath.as_posix())
-            response = requests.get(urljoin(resourceUrl, fileName), stream=True)
+            response = requests.get(urljoin(resourceUrl, fileName))
             with open(diskFilePath, "wb") as f:
-                with tqdm(total=int(response.headers["Content-length"])) as progress:
-                    for data in response.iter_content():
-                        f.write(data)
-                        progress.update(len(data))
+                f.write(response.content)
 
 
 if __name__ == "__main__":

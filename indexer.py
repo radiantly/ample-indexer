@@ -111,7 +111,27 @@ def displayLevel(course, levelInfo, spaces=0):
                     print(
                         f"{' ' * (spaces + 2)} {classRoom['classroomType']} {classRoom['fileName']} "
                     )
-        return
+
+        # So, if files exist on the level as well as sublevels, we need to send an additional
+        # request to ascertain whether sublevels exist. Atm only sending this request for
+        # Units (level type = 1), but this might need to be sent for sublevels too.
+        if levelInfo["levelType"] in [1]:
+            levelCourseContent = session.post(
+                "/learning_manager/levelWiseCourseContent",
+                data={
+                    "levelID": levelInfo["levelID"],
+                    "clg": course["clid"],
+                    "langID": "5",  # Language ID = 5 (English)
+                    "batchID": course["batchID"],
+                },
+            ).json()
+            levelInfo["subLevels"] = levelCourseContent["subLevels"]
+            # print(levelInfo["subLevels"].text)
+            # sys.exit()
+            if not levelInfo["subLevels"]:
+                return
+        else:
+            return
     for sublevel in levelInfo["subLevels"]:
         displayLevel(course, sublevel, spaces + 2)
 
