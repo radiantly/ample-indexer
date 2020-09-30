@@ -3,7 +3,7 @@ import pickle
 import requests
 from pathlib import Path
 from requests.compat import urljoin
-from CONFIG import userId, baseDomain, directoryMap, baseDir
+from CONFIG import baseDomain, directoryMap, baseDir
 
 basePath = Path(baseDir)
 

@@ -8,7 +8,7 @@ from requests.compat import urljoin
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
-from CONFIG import userId, baseDomain, chrome_type, user_email, user_passw
+from CONFIG import baseDomain, chrome_type, user_email, user_passw
 from CachedSession import CachedSession
 
 from rich.console import Console
@@ -16,10 +16,24 @@ from rich.table import Table
 
 session = CachedSession(prefix_url=baseDomain)
 
+userId = None
+
+
+def retrieveUserId():
+    global userId
+    indexPickle = Path("index.pkl")
+    if indexPickle.exists():
+        try:
+            userId = pickle.load(open(indexPickle, "rb"))["userID"]
+            return userId
+        except:
+            indexPickle.unlink()
+
 
 def getFreshCookies():
     """Open a browser to retrieve the required cookies for the session"""
 
+    global userId
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument("--ignore-certificate-errors")
     chrome_options.add_argument("--ignore-ssl-errors")
@@ -57,7 +71,9 @@ def getFreshCookies():
         lambda driver: driver.current_url.startswith(urljoin(baseDomain, "/home"))
     )
 
-    return browser.get_cookies()
+    userId = browser.find_element_by_id("userID").get_attribute("value")
+
+    return browser.get_cookies(), userId
 
 
 def testCookies(cookies):
@@ -75,9 +91,15 @@ def initSession():
     cookiePickle = Path("cookies.pkl")
     if cookiePickle.exists():
         pickledCookies = pickle.load(open(cookiePickle, "rb"))
+        if not retrieveUserId():
+            cookiePickle.unlink()
+            print(
+                "Error. Please re-run. If you get this error multiple times, get in touch with the creator."
+            )
+            sys.exit(1)
         if testCookies(pickledCookies):
             return session
-    freshCookies = getFreshCookies()
+    freshCookies, uId = getFreshCookies()
     session.setCookies(freshCookies)
     pickle.dump(freshCookies, open(cookiePickle, "wb"))
     return session

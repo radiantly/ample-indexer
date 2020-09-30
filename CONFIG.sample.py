@@ -4,9 +4,6 @@ from webdriver_manager.utils import ChromeType
 user_email = ""
 user_passw = ""
 
-# Your user id
-userId = "longGibberishHere"
-
 # Base domain
 baseDomain = "https://domain.com"
 
