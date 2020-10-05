@@ -4,9 +4,6 @@ from webdriver_manager.utils import ChromeType
 user_email = ""
 user_passw = ""
 
-# Base domain
-baseDomain = "https://domain.com"
-
 # What browser to use while retrieving cookies
 # ChromeType.GOOGLE = Google Chrome
 # ChromeType.CHROMIUM = Chromium

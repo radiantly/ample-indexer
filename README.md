@@ -1,5 +1,7 @@
 # Ample-indexer
 
+[![Run on Repl.it](https://repl.it/badge/github/radiantly/ample-indexer)](https://repl.it/github/radiantly/ample-indexer)
+
 To run:
 
 ```zsh

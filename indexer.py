@@ -8,12 +8,22 @@ from requests.compat import urljoin
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
-from CONFIG import baseDomain, chrome_type, user_email, user_passw
 from CachedSession import CachedSession
 
 from rich.console import Console
 from rich.table import Table
 
+try:
+    from CONFIG import chrome_type, user_email, user_passw
+
+    replMode = False
+except:
+    from getpass import getpass
+
+    replMode = True
+
+
+baseDomain = "ude.atirma.elpma//:sptth"[::-1]
 session = CachedSession(prefix_url=baseDomain)
 
 userId = None
@@ -42,11 +52,19 @@ def getFreshCookies():
     # chrome_options.add_argument("--user-data-dir=chrome-data")
 
     # Headless mode. Comment this if you're facing issues with selenium
-    chrome_options.add_argument("--headless")
 
-    browser = webdriver.Chrome(
-        ChromeDriverManager(chrome_type=chrome_type).install(), options=chrome_options
-    )
+    if replMode:
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+
+        user_email = input("Enter your student email id: ")
+        user_passw = getpass("Enter your password: ")
+        browser = webdriver.Chrome(options=chrome_options)
+    else:
+        chrome_options.add_argument("--headless")
+        browser = webdriver.Chrome(
+            ChromeDriverManager(chrome_type=chrome_type).install(), options=chrome_options
+        )
 
     browser.implicitly_wait(5)
 
